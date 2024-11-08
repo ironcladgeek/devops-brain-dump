@@ -39,11 +39,6 @@ Found a bug? Have a suggestion? Feel free to:
 - Open an issue
 - Submit a pull request
 - Fork and adapt for your own use
-
-## 📝 License
-
-MIT License - Feel free to use anything you find useful!
-
 ---
 
 **Note**: This is a living repository. Things might change, move around, or be completely reorganized as I learn and grow. Star the repo to keep track of updates!
