@@ -99,6 +99,7 @@ mkdir -p "$DEST"
 # Convert to absolute paths
 SRC=$(cd "$SRC" && pwd)
 DEST=$(cd "$DEST" && pwd)
+BASEDIR=$(basename "$SRC")
 
 # Main file copying logic
 find "$SRC" -type f -name "*$SUFFIX" | while read -r file; do
@@ -120,7 +121,7 @@ find "$SRC" -type f -name "*$SUFFIX" | while read -r file; do
     fi
 
     # Copy file and add original path as comment
-    echo "$ADDR_PREFIX $rel_path" > "$dest_file"
+    echo "$ADDR_PREFIX $BASEDIR/$rel_path" > "$dest_file"
     cat "$file" >> "$dest_file"
 
     echo "Copied: $file -> $dest_file"
