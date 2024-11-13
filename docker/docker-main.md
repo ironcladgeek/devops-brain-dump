@@ -24,7 +24,7 @@ This guide covers essential Docker concepts and common operations for DevOps wor
 ## Installation
 
 ### Installing Docker Engine (Ubuntu)
-See the official document [here](https://docs.docker.com/engine/install/ubuntu/).
+See the official documentation [here](https://docs.docker.com/engine/install/ubuntu/).
 
 ```bash
 # Add Docker's official GPG key:
