@@ -1,0 +1,50 @@
+services:
+  slurmctld:
+    build: .
+    hostname: slurmctld
+    container_name: slurmctld
+    volumes:
+      - ./config/slurm.conf:/etc/slurm/slurm.conf:ro
+      - ./shared:/shared
+      - ./ml_jobs:/ml_jobs
+      - slurm_state:/var/spool/slurm
+    environment:
+      - SLURM_NODE_TYPE=controller
+    networks:
+      - slurm_network
+
+  slurmd1:
+    build: .
+    hostname: slurmd1
+    container_name: slurmd1
+    volumes:
+      - ./config/slurm.conf:/etc/slurm/slurm.conf:ro
+      - ./shared:/shared
+      - ./ml_jobs:/ml_jobs
+    environment:
+      - SLURM_NODE_TYPE=worker
+    networks:
+      - slurm_network
+    depends_on:
+      - slurmctld
+
+  slurmd2:
+    build: .
+    hostname: slurmd2
+    container_name: slurmd2
+    volumes:
+      - ./config/slurm.conf:/etc/slurm/slurm.conf:ro
+      - ./shared:/shared
+      - ./ml_jobs:/ml_jobs
+    environment:
+      - SLURM_NODE_TYPE=worker
+    networks:
+      - slurm_network
+    depends_on:
+      - slurmctld
+
+networks:
+  slurm_network:
+
+volumes:
+  slurm_state:
