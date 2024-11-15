@@ -23,7 +23,7 @@ This guide covers essential Docker concepts and common operations for DevOps wor
 
 ## Installation
 
-### Installing Docker Engine (Ubuntu)
+### Installing Docker Engine and Plugins (Ubuntu)
 See the official documentation [here](https://docs.docker.com/engine/install/ubuntu/).
 
 ```bash
@@ -50,6 +50,17 @@ sudo apt-get install docker-ce \
 
 # Verify installation
 sudo docker run hello-world
+```
+
+### Installing Docker Compose plugin:
+```bash
+sudo mkdir -p /usr/local/lib/docker/cli-plugins
+sudo curl -SL https://github.com/docker/compose/releases/download/v2.30.3/docker-compose-linux-x86_64 \
+  -o /usr/local/lib/docker/cli-plugins/docker-compose
+sudo chmod +x /usr/local/lib/docker/cli-plugins/docker-compose
+
+# Verify installation
+docker compose version
 ```
 
 ### User Management
