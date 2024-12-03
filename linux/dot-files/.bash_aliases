@@ -22,5 +22,7 @@ alias ve='python3 -m venv ./venv' # Create virtual environment named venv
 alias va='source ./venv/bin/activate' # Activate virtual environment
 
 # Misc
+alias c="clear"
+alias v="vim"
 alias k="kubectl"
 alias tf="terraform"
