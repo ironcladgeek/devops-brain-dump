@@ -4,10 +4,11 @@ Welcome to my personal collection of DevOps/MLOps knowledge, scripts, and random
 
 ## 📚 Table of Contents
 
+- [Linux](linux/README.md): Various guides for Linux system administration, configuration, and management.
+
 - [Docker](docker/README.md): Comprehensive guides and best practices for Docker, including multi-stage builds, networking, and Docker Compose.
 
 - [Slurm](slurm/README.md): Docker-based Slurm cluster configurations for learning and testing, including basic and ML-ready setups.
-
 
 ## 🤔 What's This?
 
