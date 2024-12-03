@@ -40,10 +40,6 @@ set laststatus=2
 " Enable persistent undo
 set undofile
 
-" Set backup and swap files location
-set backupdir=~/.vim/backup//
-set directory=~/.vim/swap//
-
 " Enable folding
 set foldmethod=syntax
 set foldlevelstart=99
