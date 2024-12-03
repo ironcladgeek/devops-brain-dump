@@ -2,6 +2,13 @@
 
 Welcome to my personal collection of DevOps/MLOps knowledge, scripts, and random useful stuff I don't want to forget! This repo serves as my digital garden of various solutions, snippets, and notes I've gathered throughout my MLOps engineering journey.
 
+## 📚 Table of Contents
+
+- [Docker](docker/README.md): Comprehensive guides and best practices for Docker, including multi-stage builds, networking, and Docker Compose.
+
+- [Slurm](slurm/README.md): Docker-based Slurm cluster configurations for learning and testing, including basic and ML-ready setups.
+
+
 ## 🤔 What's This?
 
 This is essentially my public notebook where I store:
