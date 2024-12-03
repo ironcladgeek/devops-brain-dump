@@ -35,11 +35,21 @@ Deep dive into Docker networking:
 - Port mapping
 - Best practices
 
+### [docker-multistage.md](docker-multistage.md)
+Guide to Docker Multi-Stage Builds:
+- What are Multi-Stage Builds?
+- Benefits of Multi-Stage Builds
+- Basic syntax and best practices
+- Real-world examples
+- Advanced techniques
+- Troubleshooting
+
 ## 🚀 Quick Start
 
 1. Start with `docker-main.md` for installation and basic concepts
 2. Move to `docker-compose.md` for multi-container applications
 3. Refer to `docker-networking.md` for network configuration
+4. Check `docker-multistage.md` for optimizing your Docker images with multi-stage builds
 
 
 ## ⚠️ Notes
