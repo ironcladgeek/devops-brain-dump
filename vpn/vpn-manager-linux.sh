@@ -59,18 +59,23 @@ start_v2ray() {
     echo "Starting v2ray..."
 
     # Kill any existing v2ray process
-    systemctl stop v2ray || true
     pkill v2ray || true
     sleep 1
 
-    # Start v2ray service
-    systemctl start v2ray
+    # Create log directory if it doesn't exist
+    mkdir -p /usr/local/var/log
+    chown -R $SUDO_USER:$SUDO_USER /usr/local/var/log
+
+    # Start v2ray in background
+    nohup v2ray run -c /usr/local/etc/v2ray/config.json >/usr/local/var/log/v2ray.log 2>&1 &
+
+    # Wait for it to start
     sleep 2
 
     # Verify it's running
-    if ! systemctl is-active v2ray >/dev/null 2>&1; then
+    if ! pgrep v2ray >/dev/null; then
         echo "Failed to start v2ray. Check logs:"
-        journalctl -u v2ray --no-pager -n 50
+        cat /usr/local/var/log/v2ray.log
         return 1
     fi
 
@@ -78,7 +83,7 @@ start_v2ray() {
     echo "Testing connection..."
     if ! curl -s --max-time 5 -x socks5h://127.0.0.1:$SOCKS_PORT ifconfig.me >/dev/null; then
         echo "Connection test failed. V2Ray logs:"
-        journalctl -u v2ray --no-pager -n 50
+        cat /usr/local/var/log/v2ray.log
         return 1
     fi
 
@@ -89,7 +94,7 @@ start_v2ray() {
 # Stop v2ray process
 stop_v2ray() {
     echo "Stopping v2ray..."
-    systemctl stop v2ray
+    pkill v2ray || true
     sleep 1
 }
 
@@ -118,6 +123,12 @@ install_v2ray() {
     # Install v2ray rules/geo data
     bash <(curl -L https://raw.githubusercontent.com/v2fly/fhs-install-v2ray/master/install-dat-release.sh)
 
+    # Create necessary directories
+    mkdir -p /usr/local/etc/v2ray
+    mkdir -p /usr/local/var/log
+    chown -R $SUDO_USER:$SUDO_USER /usr/local/etc/v2ray
+    chown -R $SUDO_USER:$SUDO_USER /usr/local/var/log
+
     echo "Installation completed successfully"
 }
 
@@ -136,8 +147,8 @@ configure_and_connect() {
     cat >/usr/local/etc/v2ray/config.json <<EOF
 {
   "log": {
-    "access": "/var/log/v2ray/access.log",
-    "error": "/var/log/v2ray/error.log",
+    "access": "/usr/local/var/log/v2ray-access.log",
+    "error": "/usr/local/var/log/v2ray-error.log",
     "loglevel": "info"
   },
   "inbounds": [{
@@ -165,10 +176,6 @@ configure_and_connect() {
 }
 EOF
 
-    # Create log directory if it doesn't exist
-    mkdir -p /var/log/v2ray
-    chown -R v2ray:v2ray /var/log/v2ray
-
     # Start v2ray with new config
     if ! start_v2ray; then
         echo "Failed to start v2ray"
@@ -184,6 +191,8 @@ EOF
     # Clear existing rules
     iptables -F
     iptables -X
+    iptables -t nat -F
+    iptables -t nat -X
 
     # Set default policies
     iptables -P INPUT DROP
@@ -200,19 +209,22 @@ EOF
 
     # Allow DNS
     iptables -A OUTPUT -p udp --dport 53 -j ACCEPT
+    iptables -A INPUT -p udp --sport 53 -j ACCEPT
 
     # Allow established connections
     iptables -A INPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
     iptables -A OUTPUT -m state --state ESTABLISHED,RELATED -j ACCEPT
 
     # Allow outbound traffic to VPN server
-    iptables -A OUTPUT -d $ADDRESS -j ACCEPT
+    iptables -A OUTPUT -d $ADDRESS -p tcp --dport $PORT -j ACCEPT
+    iptables -A INPUT -s $ADDRESS -p tcp --sport $PORT -j ACCEPT
 
-    # Allow common development ports
+    # Allow tun interface for VPN traffic
+    iptables -A INPUT -i tun+ -j ACCEPT
+    iptables -A OUTPUT -o tun+ -j ACCEPT
+
+    # Allow specific ports (22, 80, 443)
     iptables -A OUTPUT -p tcp -m multiport --dports 22,80,443 -j ACCEPT
-    iptables -A OUTPUT -p tcp --match multiport --dports 3000:3999 -j ACCEPT
-    iptables -A OUTPUT -p tcp --match multiport --dports 5000:5999 -j ACCEPT
-    iptables -A OUTPUT -p tcp --match multiport --dports 8000:8999 -j ACCEPT
 
     # Save iptables rules for persistence
     mkdir -p /etc/iptables
@@ -222,18 +234,24 @@ EOF
         iptables-save >/etc/iptables/rules.v4
     fi
 
+    # Set up system-wide proxy
     echo "Setting up system-wide proxy..."
-    # Set system-wide proxy environment variables
-    cat >/etc/profile.d/proxy.sh <<EOF
-export http_proxy="socks5://127.0.0.1:$SOCKS_PORT"
-export https_proxy="socks5://127.0.0.1:$SOCKS_PORT"
-export all_proxy="socks5://127.0.0.1:$SOCKS_PORT"
+
+    # Set current session proxy
+    export http_proxy="socks5://127.0.0.1:$SOCKS_PORT"
+    export https_proxy="socks5://127.0.0.1:$SOCKS_PORT"
+    export all_proxy="socks5://127.0.0.1:$SOCKS_PORT"
+
+    # Set permanent system-wide proxy
+    cat >/etc/environment <<EOF
+http_proxy="socks5://127.0.0.1:$SOCKS_PORT"
+https_proxy="socks5://127.0.0.1:$SOCKS_PORT"
+all_proxy="socks5://127.0.0.1:$SOCKS_PORT"
 EOF
 
-    chmod +x /etc/profile.d/proxy.sh
-
     echo "VPN configured and connected. Testing final connection..."
-    curl -x socks5h://127.0.0.1:$SOCKS_PORT ifconfig.me
+    PUBLIC_IP=$(curl -x socks5h://127.0.0.1:$SOCKS_PORT ifconfig.me)
+    echo "Current public IP: $PUBLIC_IP"
 }
 
 # Disconnect and reset configuration
@@ -252,7 +270,14 @@ disconnect_and_reset() {
     stop_v2ray
 
     # Remove system-wide proxy
-    rm -f /etc/profile.d/proxy.sh
+    sed -i '/http_proxy/d' /etc/environment
+    sed -i '/https_proxy/d' /etc/environment
+    sed -i '/all_proxy/d' /etc/environment
+
+    # Unset current session proxy
+    unset http_proxy
+    unset https_proxy
+    unset all_proxy
 
     # Restore original iptables rules
     restore_iptables
