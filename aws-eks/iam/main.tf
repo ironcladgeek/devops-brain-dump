@@ -42,7 +42,7 @@ resource "aws_iam_role_policy_attachment" "eks_cluster_policy" {
 }
 
 # Node group IAM role
-resource "aws_iam_role" "eks_nodegroup" {
+resource "aws_iam_role" "eks_node_group" {
   name = "${var.project}-${var.environment}-eks-node-group-role"
 
   assume_role_policy = jsonencode({
@@ -60,17 +60,17 @@ resource "aws_iam_role" "eks_nodegroup" {
 }
 
 # Attach required policies to the node group role
-resource "aws_iam_role_policy_attachment" "eks_nodegroup_policy" {
-  role       = aws_iam_role.eks_nodegroup.name
+resource "aws_iam_role_policy_attachment" "eks_node_group_policy" {
+  role       = aws_iam_role.eks_node_group.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
 }
 
 resource "aws_iam_role_policy_attachment" "eks_cni_policy" {
-  role       = aws_iam_role.eks_nodegroup.name
+  role       = aws_iam_role.eks_node_group.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy"
 }
 
 resource "aws_iam_role_policy_attachment" "eks_ec2_policy" {
-  role       = aws_iam_role.eks_nodegroup.name
+  role       = aws_iam_role.eks_node_group.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
