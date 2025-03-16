@@ -67,7 +67,7 @@ resource "aws_internet_gateway" "main" {
 resource "aws_eip" "nat" {
   count = length(var.availability_zones)
 
-  domain = true
+  domain = "vpc"
 
   tags = merge(local.tags, {
     Name = "${var.project}-${var.environment}-nat-eip-${count.index + 1}"
@@ -126,5 +126,5 @@ resource "aws_route_table_association" "public" {
 resource "aws_route_table_association" "private" {
   count          = length(var.availability_zones)
   subnet_id      = aws_subnet.private[count.index].id
-  route_table_id = aws_route_table.private.id
+  route_table_id = aws_route_table.private[count.index].id
 }
