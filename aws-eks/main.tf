@@ -12,3 +12,9 @@ module "vpc" {
   vpc_cidr           = var.vpc_cidr
   availability_zones = var.availability_zones
 }
+
+module "iam" {
+  source      = "./iam"
+  project     = var.project
+  environment = var.environment
+}
