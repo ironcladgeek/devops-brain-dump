@@ -1,3 +1,5 @@
+# aws-eks/vpc/variables.tf
+
 variable "project" {
   description = "The project name"
   type        = string

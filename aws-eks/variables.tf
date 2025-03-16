@@ -1,3 +1,4 @@
+# aws-eks/variables.tf
 variable "project" {
   description = "Project name"
   type        = string
